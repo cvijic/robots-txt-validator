@@ -112,7 +112,11 @@ export default function Home() {
         <div className="container py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">robots<span className="text-accent">.txt</span></h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-foreground">robots<span className="text-accent">.txt</span></h1>
+                <span className="text-sm text-muted-foreground">by</span>
+                <span className="text-lg font-semibold text-accent">Funky Enterprises LLC</span>
+              </div>
               <p className="text-sm text-muted-foreground mt-1">
                 Validator and Testing Tool
               </p>
@@ -178,7 +182,7 @@ export default function Home() {
               <Button
                 onClick={validateRobotsTxt}
                 disabled={validateMutation.isPending}
-                className="w-full bg-accent text-accent-foreground hover:opacity-90 border border-accent"
+                className="w-full bg-accent text-accent-foreground hover:opacity-90 border-2 border-accent font-bold text-base py-6 shadow-lg shadow-accent/50 hover:shadow-accent/70 transition-all"
               >
                 {validateMutation.isPending ? (
                   <>

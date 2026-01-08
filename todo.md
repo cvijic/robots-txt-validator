@@ -38,3 +38,8 @@
 - [x] Update index.css with new color palette
 - [x] Update index.html with new fonts
 - [x] Apply new design to Home.tsx
+
+
+## UI Updates
+- [x] Make Test robots.txt button more prominent with fluo/neon lime color
+- [x] Add "Funky Enterprises LLC" branding in header next to "robots.txt"
