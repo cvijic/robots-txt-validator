@@ -43,3 +43,8 @@
 ## UI Updates
 - [x] Make Test robots.txt button more prominent with fluo/neon lime color
 - [x] Add "Funky Enterprises LLC" branding in header next to "robots.txt"
+
+
+## Bug Fixes
+- [x] Fix User Agent dropdown overflow/z-index issue - dropdown menu breaking layout
+- [x] Enhance Test robots.txt button fluorescent effect - make it more glowing and prominent

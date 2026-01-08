@@ -169,7 +169,7 @@ export default function Home() {
                   <SelectTrigger className="bg-input border border-border rounded-sm px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
+                  <SelectContent className="bg-card border-border z-50 max-h-[300px] overflow-y-auto">
                     {USER_AGENTS.map((agent) => (
                       <SelectItem key={agent.value} value={agent.value}>
                         {agent.label}
@@ -182,7 +182,7 @@ export default function Home() {
               <Button
                 onClick={validateRobotsTxt}
                 disabled={validateMutation.isPending}
-                className="w-full bg-accent text-accent-foreground hover:opacity-90 border-2 border-accent font-bold text-base py-6 shadow-lg shadow-accent/50 hover:shadow-accent/70 transition-all"
+                className="w-full bg-accent text-accent-foreground hover:opacity-90 border-2 border-accent font-bold text-base py-6 shadow-[0_0_20px_rgba(212,255,0,0.6)] hover:shadow-[0_0_30px_rgba(212,255,0,0.8)] transition-all duration-300 hover:scale-[1.02]"
               >
                 {validateMutation.isPending ? (
                   <>
