@@ -65,3 +65,6 @@
 - [ ] Fix User Agent dropdown highlight color - yellow background makes text unreadable
 - [ ] Fix dropdown z-index - "About" text visible through dropdown
 - [ ] Update Test robots.txt button to neon lime color rgb(196, 255, 13) with dark text rgb(10, 30, 30)
+
+## Cleanup
+- [x] Remove Umami analytics script from index.html
