@@ -23,3 +23,18 @@
 - [ ] Bulk URL testing
 - [ ] Export results as PDF/CSV
 - [ ] API endpoint for programmatic access
+
+
+## New Feature Requests
+- [x] Remove Check Resources option (CSS, JS, Images)
+- [x] Add Meta Robots tag checker - parse HTML for `<meta name="robots">` tags
+- [x] Add X-Robots-Tag HTTP header checker
+- [x] Display meta robots and X-Robots-Tag results alongside robots.txt results
+- [x] Update UI to show all three checks (robots.txt, meta robots, X-Robots-Tag)
+
+## Design Update
+- [x] Extract colors from https://www.funky.enterprises
+- [x] Extract fonts from https://www.funky.enterprises
+- [x] Update index.css with new color palette
+- [x] Update index.html with new fonts
+- [x] Apply new design to Home.tsx

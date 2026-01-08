@@ -21,7 +21,6 @@ describe("robots.validate", () => {
     const result = await caller.robots.validate({
       url: "google.com",
       userAgent: "googlebot",
-      checkResources: false,
     });
 
     expect(result).toBeDefined();
@@ -32,6 +31,10 @@ describe("robots.validate", () => {
     expect(result.rules).toBeDefined();
     expect(Array.isArray(result.rules)).toBe(true);
     expect(typeof result.allowed).toBe("boolean");
+    
+    // Check for meta robots and X-Robots-Tag
+    expect(result.metaRobots === null || typeof result.metaRobots === "string").toBe(true);
+    expect(result.xRobotsTag === null || typeof result.xRobotsTag === "string").toBe(true);
   });
 
   it("should handle URLs without protocol", async () => {
@@ -41,7 +44,6 @@ describe("robots.validate", () => {
     const result = await caller.robots.validate({
       url: "github.com",
       userAgent: "googlebot",
-      checkResources: false,
     });
 
     expect(result.url).toMatch(/^https?:\/\//);
@@ -55,7 +57,6 @@ describe("robots.validate", () => {
     const result = await caller.robots.validate({
       url: "google.com",
       userAgent: "googlebot",
-      checkResources: false,
     });
 
     expect(result.rules).toBeDefined();
@@ -72,13 +73,12 @@ describe("robots.validate", () => {
       const result = await caller.robots.validate({
         url: "google.com",
         userAgent: agent,
-        checkResources: false,
       });
 
       expect(result.userAgent).toBe(agent);
       expect(result.robotsTxtContent).toBeDefined();
     }
-  });
+  }, 15000);
 
   it("should throw error for invalid domain", async () => {
     const ctx = createMockContext();
@@ -88,7 +88,6 @@ describe("robots.validate", () => {
       caller.robots.validate({
         url: "this-domain-does-not-exist-12345678.com",
         userAgent: "googlebot",
-        checkResources: false,
       })
     ).rejects.toThrow();
   });

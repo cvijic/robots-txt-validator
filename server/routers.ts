@@ -25,11 +25,10 @@ export const appRouter = router({
         z.object({
           url: z.string(),
           userAgent: z.string(),
-          checkResources: z.boolean().optional(),
         })
       )
       .mutation(async ({ input }) => {
-        const { url, userAgent, checkResources } = input;
+        const { url, userAgent } = input;
 
         try {
           let urlToCheck = url;
@@ -40,22 +39,44 @@ export const appRouter = router({
           const urlObj = new URL(urlToCheck);
           const robotsUrl = `${urlObj.protocol}//${urlObj.host}/robots.txt`;
 
-          const response = await axios.get(robotsUrl, {
+          // Fetch robots.txt
+          const robotsResponse = await axios.get(robotsUrl, {
             timeout: 10000,
             headers: {
-              "User-Agent": "Mozilla/5.0 (compatible; RobotsTxtValidator/1.0)",
+              "User-Agent": userAgent,
             },
           });
+          const robotsTxtContent = robotsResponse.data;
 
-          const robotsTxtContent = response.data;
+          // Fetch HTML page for meta robots and X-Robots-Tag
+          let metaRobots: string | null = null;
+          let xRobotsTag: string | null = null;
+          
+          try {
+            const pageResponse = await axios.get(urlToCheck, {
+              timeout: 10000,
+              headers: {
+                "User-Agent": userAgent,
+              },
+            });
 
+            // Extract X-Robots-Tag from response headers
+            xRobotsTag = pageResponse.headers["x-robots-tag"] || null;
+
+            // Extract meta robots from HTML
+            const html = pageResponse.data;
+            const metaRobotsMatch = html.match(/<meta\s+name=["']robots["']\s+content=["']([^"']+)["']/i);
+            if (metaRobotsMatch) {
+              metaRobots = metaRobotsMatch[1];
+            }
+          } catch (error) {
+            // Page might not be accessible, but we still have robots.txt
+            console.log("Could not fetch page for meta robots check:", error);
+          }
+
+          // Parse robots.txt
           const isAllowed = checkIfAllowed(robotsTxtContent, urlObj.pathname, userAgent);
           const rules = parseRobotsTxtRules(robotsTxtContent, userAgent);
-
-          let resources = undefined;
-          if (checkResources) {
-            resources = await checkResourcesAvailability(urlObj);
-          }
 
           return {
             url: urlToCheck,
@@ -63,7 +84,8 @@ export const appRouter = router({
             allowed: isAllowed,
             rules,
             robotsTxtContent,
-            resources,
+            metaRobots,
+            xRobotsTag,
           };
         } catch (error: any) {
           throw new Error(
@@ -135,35 +157,6 @@ function parseRobotsTxtRules(content: string, agent: string): string[] {
   }
 
   return rules.length > 0 ? rules : ["No specific rules found"];
-}
-
-async function checkResourcesAvailability(urlObj: URL) {
-  const baseHost = `${urlObj.protocol}//${urlObj.host}`;
-
-  try {
-    const checks = await Promise.all([
-      axios
-        .head(`${baseHost}/style.css`, { timeout: 5000 })
-        .then(() => true)
-        .catch(() => false),
-      axios
-        .head(`${baseHost}/script.js`, { timeout: 5000 })
-        .then(() => true)
-        .catch(() => false),
-      axios
-        .head(`${baseHost}/image.jpg`, { timeout: 5000 })
-        .then(() => true)
-        .catch(() => false),
-    ]);
-
-    return {
-      css: checks[0],
-      javascript: checks[1],
-      images: checks[2],
-    };
-  } catch {
-    return { css: false, javascript: false, images: false };
-  }
 }
 
 export type AppRouter = typeof appRouter;

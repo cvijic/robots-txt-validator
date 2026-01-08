@@ -9,8 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle, XCircle, AlertCircle, Copy, Check } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, AlertCircle, Copy, Check, Info } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 
@@ -28,11 +27,8 @@ interface RobotsResult {
   allowed: boolean;
   rules: string[];
   robotsTxtContent: string;
-  resources?: {
-    css: boolean;
-    javascript: boolean;
-    images: boolean;
-  };
+  metaRobots: string | null;
+  xRobotsTag: string | null;
 }
 
 const USER_AGENTS = [
@@ -48,7 +44,6 @@ const USER_AGENTS = [
 export default function Home() {
   const [url, setUrl] = useState("");
   const [userAgent, setUserAgent] = useState("googlebot");
-  const [checkResources, setCheckResources] = useState(false);
   const [result, setResult] = useState<RobotsResult | null>(null);
   const [mode, setMode] = useState<"live" | "editor">("live");
   const [copied, setCopied] = useState(false);
@@ -73,7 +68,6 @@ export default function Home() {
     validateMutation.mutate({
       url,
       userAgent,
-      checkResources,
     });
   };
 
@@ -83,6 +77,34 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const parseMetaRobots = (metaContent: string | null) => {
+    if (!metaContent) return null;
+    
+    const directives = metaContent.toLowerCase().split(',').map(d => d.trim());
+    return {
+      noindex: directives.includes('noindex'),
+      nofollow: directives.includes('nofollow'),
+      noarchive: directives.includes('noarchive'),
+      nosnippet: directives.includes('nosnippet'),
+      noimageindex: directives.includes('noimageindex'),
+      raw: metaContent,
+    };
+  };
+
+  const parseXRobotsTag = (xRobots: string | null) => {
+    if (!xRobots) return null;
+    
+    const directives = xRobots.toLowerCase().split(',').map(d => d.trim());
+    return {
+      noindex: directives.includes('noindex'),
+      nofollow: directives.includes('nofollow'),
+      noarchive: directives.includes('noarchive'),
+      nosnippet: directives.includes('nosnippet'),
+      noimageindex: directives.includes('noimageindex'),
+      raw: xRobots,
+    };
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground grid-bg overflow-hidden">
       {/* Header */}
@@ -90,23 +112,23 @@ export default function Home() {
         <div className="container py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-accent">robots.txt</h1>
+              <h1 className="text-3xl font-bold text-foreground">robots<span className="text-accent">.txt</span></h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Validator and Testing Tool
               </p>
             </div>
             <div className="flex gap-2">
               <Button
-                variant={mode === "live" ? "default" : "outline"}
+                variant="outline"
                 onClick={() => setMode("live")}
-                className="bg-accent text-accent-foreground hover:opacity-90 border border-accent"
+                className={mode === "live" ? "bg-accent text-accent-foreground hover:opacity-90 border-accent" : "bg-transparent text-foreground hover:bg-accent/10 border-border"}
               >
                 Live
               </Button>
               <Button
-                variant={mode === "editor" ? "default" : "outline"}
+                variant="outline"
                 onClick={() => setMode("editor")}
-                className="bg-transparent text-accent hover:bg-accent/10 border border-accent"
+                className={mode === "editor" ? "bg-accent text-accent-foreground hover:opacity-90 border-accent" : "bg-transparent text-foreground hover:bg-accent/10 border-border"}
               >
                 Editor
               </Button>
@@ -153,23 +175,6 @@ export default function Home() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="resources"
-                  checked={checkResources}
-                  onCheckedChange={(checked) =>
-                    setCheckResources(checked as boolean)
-                  }
-                  className="border-accent"
-                />
-                <label
-                  htmlFor="resources"
-                  className="text-sm font-medium text-foreground cursor-pointer"
-                >
-                  Check Resources (CSS, JS, Images)
-                </label>
-              </div>
-
               <Button
                 onClick={validateRobotsTxt}
                 disabled={validateMutation.isPending}
@@ -190,10 +195,8 @@ export default function Home() {
             <Card className="bg-card border-border p-6">
               <h3 className="font-bold text-sm text-accent mb-3">About</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Test and validate your robots.txt file. Check if a URL is blocked,
-                which statement is blocking it, and for which user agent. You can
-                also check if the resources for the page (CSS, JavaScript, images)
-                are disallowed.
+                Test and validate your robots.txt file, meta robots tags, and X-Robots-Tag HTTP headers. 
+                Check if a URL is blocked, which directives are affecting it, and for which user agent.
               </p>
             </Card>
           </div>
@@ -205,7 +208,7 @@ export default function Home() {
                 {/* Status Card */}
                 <Card className="bg-card border-border p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-foreground">Status</h3>
+                    <h3 className="font-bold text-foreground">robots.txt Status</h3>
                     {result.allowed ? (
                       <div className="status-badge status-allowed">
                         <CheckCircle className="w-4 h-4" />
@@ -234,6 +237,121 @@ export default function Home() {
                   </div>
                 </Card>
 
+                {/* Meta Robots Card */}
+                {result.metaRobots && (
+                  <Card className="bg-card border-border p-6">
+                    <h3 className="font-bold text-foreground mb-3">Meta Robots Tag</h3>
+                    <div className="space-y-2">
+                      <div className="bg-card border border-border rounded-sm p-3 font-mono text-xs">
+                        <span className="text-accent">{result.metaRobots}</span>
+                      </div>
+                      {(() => {
+                        const parsed = parseMetaRobots(result.metaRobots);
+                        if (!parsed) return null;
+                        return (
+                          <div className="space-y-1 text-xs">
+                            {parsed.noindex && (
+                              <div className="flex items-center gap-2">
+                                <XCircle className="w-3 h-3 text-red-500" />
+                                <span className="text-muted-foreground">noindex - Page will not be indexed</span>
+                              </div>
+                            )}
+                            {parsed.nofollow && (
+                              <div className="flex items-center gap-2">
+                                <XCircle className="w-3 h-3 text-red-500" />
+                                <span className="text-muted-foreground">nofollow - Links will not be followed</span>
+                              </div>
+                            )}
+                            {parsed.noarchive && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">noarchive - No cached version</span>
+                              </div>
+                            )}
+                            {parsed.nosnippet && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">nosnippet - No snippet in search results</span>
+                              </div>
+                            )}
+                            {parsed.noimageindex && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">noimageindex - Images will not be indexed</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </Card>
+                )}
+
+                {/* X-Robots-Tag Card */}
+                {result.xRobotsTag && (
+                  <Card className="bg-card border-border p-6">
+                    <h3 className="font-bold text-foreground mb-3">X-Robots-Tag Header</h3>
+                    <div className="space-y-2">
+                      <div className="bg-card border border-border rounded-sm p-3 font-mono text-xs">
+                        <span className="text-accent">{result.xRobotsTag}</span>
+                      </div>
+                      {(() => {
+                        const parsed = parseXRobotsTag(result.xRobotsTag);
+                        if (!parsed) return null;
+                        return (
+                          <div className="space-y-1 text-xs">
+                            {parsed.noindex && (
+                              <div className="flex items-center gap-2">
+                                <XCircle className="w-3 h-3 text-red-500" />
+                                <span className="text-muted-foreground">noindex - Page will not be indexed</span>
+                              </div>
+                            )}
+                            {parsed.nofollow && (
+                              <div className="flex items-center gap-2">
+                                <XCircle className="w-3 h-3 text-red-500" />
+                                <span className="text-muted-foreground">nofollow - Links will not be followed</span>
+                              </div>
+                            )}
+                            {parsed.noarchive && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">noarchive - No cached version</span>
+                              </div>
+                            )}
+                            {parsed.nosnippet && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">nosnippet - No snippet in search results</span>
+                              </div>
+                            )}
+                            {parsed.noimageindex && (
+                              <div className="flex items-center gap-2">
+                                <Info className="w-3 h-3 text-yellow-500" />
+                                <span className="text-muted-foreground">noimageindex - Images will not be indexed</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </Card>
+                )}
+
+                {/* No Meta/X-Robots Info */}
+                {!result.metaRobots && !result.xRobotsTag && (
+                  <Card className="bg-card border-border p-6">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <div>
+                        <h3 className="font-bold text-foreground text-sm">No Blocking Directives</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          No meta robots tag or X-Robots-Tag header found. Page is indexable.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
                 {/* Rules Card */}
                 <Card className="bg-card border-border p-6">
                   <h3 className="font-bold text-foreground mb-3">Matching Rules</h3>
@@ -245,59 +363,6 @@ export default function Home() {
                     ))}
                   </div>
                 </Card>
-
-                {/* Resources Check */}
-                {result.resources && (
-                  <Card className="bg-card border-border p-6">
-                    <h3 className="font-bold text-foreground mb-3">
-                      Resources Status
-                    </h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">CSS</span>
-                        {result.resources.css ? (
-                          <span className="status-badge status-allowed">
-                            <CheckCircle className="w-3 h-3" />
-                            Available
-                          </span>
-                        ) : (
-                          <span className="status-badge status-unknown">
-                            <AlertCircle className="w-3 h-3" />
-                            Not Found
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">JavaScript</span>
-                        {result.resources.javascript ? (
-                          <span className="status-badge status-allowed">
-                            <CheckCircle className="w-3 h-3" />
-                            Available
-                          </span>
-                        ) : (
-                          <span className="status-badge status-unknown">
-                            <AlertCircle className="w-3 h-3" />
-                            Not Found
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Images</span>
-                        {result.resources.images ? (
-                          <span className="status-badge status-allowed">
-                            <CheckCircle className="w-3 h-3" />
-                            Available
-                          </span>
-                        ) : (
-                          <span className="status-badge status-unknown">
-                            <AlertCircle className="w-3 h-3" />
-                            Not Found
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                )}
 
                 {/* robots.txt Content */}
                 {mode === "editor" && (
