@@ -411,6 +411,25 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/50 backdrop-blur-sm mt-12">
+        <div className="container py-6">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              Powered by{" "}
+              <a
+                href="https://www.funky.enterprises"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline font-semibold"
+              >
+                Funky Enterprises LLC
+              </a>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -48,3 +48,6 @@
 ## Bug Fixes
 - [x] Fix User Agent dropdown overflow/z-index issue - dropdown menu breaking layout
 - [x] Enhance Test robots.txt button fluorescent effect - make it more glowing and prominent
+
+## Footer
+- [x] Add footer with link to main Funky Enterprises website (https://www.funky.enterprises)
