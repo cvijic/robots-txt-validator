@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import rateLimit from "express-rate-limit";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +34,18 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // Rate limiting: 100 requests per hour per IP
+  const limiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 100, // 100 requests per hour
+    message: "Too many requests from this IP, please try again later.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  });
+  
+  // Apply rate limiting to API routes only
+  app.use("/api/", limiter);
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

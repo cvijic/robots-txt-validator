@@ -68,3 +68,9 @@
 
 ## Cleanup
 - [x] Remove Umami analytics script from index.html
+
+## SEO & Performance
+- [x] Add Open Graph meta tags for social media sharing
+- [x] Add Twitter Card meta tags
+- [x] Create and add Funky Enterprises favicon
+- [x] Implement rate limiting for backend API (100 requests/hour per IP)
