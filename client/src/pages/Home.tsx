@@ -234,7 +234,7 @@ export default function Home() {
               <Button
                 onClick={validateRobotsTxt}
                 disabled={validateMutation.isPending || validateCustomMutation.isPending}
-                className="w-full font-bold text-base py-6 transition-all duration-300 hover:scale-[1.02]" style={{backgroundColor: 'rgb(233, 245, 73)', color: 'rgb(0, 0, 238)', boxShadow: '0 0 20px rgba(233, 245, 73, 0.6)', border: '2px solid rgb(233, 245, 73)'}} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 30px rgba(233, 245, 73, 0.8)'} onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 20px rgba(233, 245, 73, 0.6)'}
+                className="w-full font-bold text-base py-6 transition-all duration-300 hover:scale-[1.02]" style={{backgroundColor: 'rgb(196, 255, 13)', color: 'rgb(10, 30, 30)', boxShadow: '0 0 20px rgba(196, 255, 13, 0.6)', border: '2px solid rgb(196, 255, 13)'}} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 30px rgba(196, 255, 13, 0.8)'} onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 20px rgba(196, 255, 13, 0.6)'}
               >
                 {(validateMutation.isPending || validateCustomMutation.isPending) ? (
                   <>

@@ -59,3 +59,9 @@
 
 ## Logic Bug
 - [x] checkIfAllowed function works correctly - `/admin/` matches `Disallow: /admin/` (no bug, robots.txt standard behavior)
+
+
+## UI Bugs
+- [ ] Fix User Agent dropdown highlight color - yellow background makes text unreadable
+- [ ] Fix dropdown z-index - "About" text visible through dropdown
+- [ ] Update Test robots.txt button to neon lime color rgb(196, 255, 13) with dark text rgb(10, 30, 30)
