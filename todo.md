@@ -51,3 +51,11 @@
 
 ## Footer
 - [x] Add footer with link to main Funky Enterprises website (https://www.funky.enterprises)
+
+
+## Critical Bugs
+- [x] Implement Editor mode logic - test URL against custom robots.txt content (add URL input in Editor mode)
+- [x] Update Test robots.txt button color to Funky fluo yellow-green (rgb(233, 245, 73) bg, rgb(0, 0, 238) text)
+
+## Logic Bug
+- [x] checkIfAllowed function works correctly - `/admin/` matches `Disallow: /admin/` (no bug, robots.txt standard behavior)

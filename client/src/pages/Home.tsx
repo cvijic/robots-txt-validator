@@ -47,11 +47,23 @@ export default function Home() {
   const [result, setResult] = useState<RobotsResult | null>(null);
   const [mode, setMode] = useState<"live" | "editor">("live");
   const [copied, setCopied] = useState(false);
+  const [customRobotsTxt, setCustomRobotsTxt] = useState("");
 
   const validateMutation = trpc.robots.validate.useMutation({
     onSuccess: (data) => {
       setResult(data);
       toast.success("Robots.txt validated successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setResult(null);
+    },
+  });
+
+  const validateCustomMutation = trpc.robots.validateCustom.useMutation({
+    onSuccess: (data) => {
+      setResult(data);
+      toast.success("Custom robots.txt validated successfully");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -65,10 +77,22 @@ export default function Home() {
       return;
     }
 
-    validateMutation.mutate({
-      url,
-      userAgent,
-    });
+    if (mode === "editor") {
+      if (!customRobotsTxt.trim()) {
+        toast.error("Please enter custom robots.txt content");
+        return;
+      }
+      validateCustomMutation.mutate({
+        url,
+        userAgent,
+        customRobotsTxt,
+      });
+    } else {
+      validateMutation.mutate({
+        url,
+        userAgent,
+      });
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -147,19 +171,47 @@ export default function Home() {
           {/* Input Panel - Left */}
           <div className="space-y-6">
             <Card className="bg-card border-border p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-foreground mb-2">
-                  URL
-                </label>
-                <Input
-                  type="text"
-                  placeholder="example.com or https://example.com/page"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && validateRobotsTxt()}
-                  className="bg-input border border-border rounded-sm px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              {mode === "live" ? (
+                <div>
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    URL
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="example.com or https://example.com/page"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && validateRobotsTxt()}
+                    className="bg-input border border-border rounded-sm px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-foreground mb-2">
+                      URL to Test
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="example.com/page or https://example.com/page"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="bg-input border border-border rounded-sm px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-foreground mb-2">
+                      Custom robots.txt Content
+                    </label>
+                    <textarea
+                      placeholder="Paste your robots.txt content here...\n\nUser-agent: *\nDisallow: /admin/\nAllow: /public/"
+                      value={customRobotsTxt}
+                      onChange={(e) => setCustomRobotsTxt(e.target.value)}
+                      className="w-full bg-input border border-border rounded-sm px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 font-mono text-sm min-h-[200px]"
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block text-sm font-bold text-foreground mb-2">
@@ -181,10 +233,10 @@ export default function Home() {
 
               <Button
                 onClick={validateRobotsTxt}
-                disabled={validateMutation.isPending}
-                className="w-full bg-accent text-accent-foreground hover:opacity-90 border-2 border-accent font-bold text-base py-6 shadow-[0_0_20px_rgba(212,255,0,0.6)] hover:shadow-[0_0_30px_rgba(212,255,0,0.8)] transition-all duration-300 hover:scale-[1.02]"
+                disabled={validateMutation.isPending || validateCustomMutation.isPending}
+                className="w-full font-bold text-base py-6 transition-all duration-300 hover:scale-[1.02]" style={{backgroundColor: 'rgb(233, 245, 73)', color: 'rgb(0, 0, 238)', boxShadow: '0 0 20px rgba(233, 245, 73, 0.6)', border: '2px solid rgb(233, 245, 73)'}} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 30px rgba(233, 245, 73, 0.8)'} onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 20px rgba(233, 245, 73, 0.6)'}
               >
-                {validateMutation.isPending ? (
+                {(validateMutation.isPending || validateCustomMutation.isPending) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Testing...

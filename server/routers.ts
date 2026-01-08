@@ -20,6 +20,42 @@ export const appRouter = router({
   }),
 
   robots: router({
+    validateCustom: publicProcedure
+      .input(
+        z.object({
+          url: z.string(),
+          userAgent: z.string(),
+          customRobotsTxt: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { url, userAgent, customRobotsTxt } = input;
+
+        try {
+          let urlToCheck = url;
+          if (!urlToCheck.startsWith("http://") && !urlToCheck.startsWith("https://")) {
+            urlToCheck = "https://" + urlToCheck;
+          }
+
+          const urlObj = new URL(urlToCheck);
+          
+          // Parse custom robots.txt
+          const isAllowed = checkIfAllowed(customRobotsTxt, urlObj.pathname, userAgent);
+          const rules = parseRobotsTxtRules(customRobotsTxt, userAgent);
+
+          return {
+            url: urlToCheck,
+            userAgent,
+            allowed: isAllowed,
+            rules,
+            robotsTxtContent: customRobotsTxt,
+            metaRobots: null,
+            xRobotsTag: null,
+          };
+        } catch (error: any) {
+          throw new Error("Invalid URL or robots.txt content");
+        }
+      }),
     validate: publicProcedure
       .input(
         z.object({
